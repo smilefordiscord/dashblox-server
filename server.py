@@ -24,14 +24,19 @@ from flask import Flask, request
 
 app = Flask(__name__)
 
-test = os.environ.get('keyid')
-print(test)
 
-# client = boto3.Session(
-    
-# )
+keyid = os.environ.get('keyid')
+secret = os.environ.get('secret')
+region = "us-west-2"
+# output = "json"
 
-dynamodb = boto3.resource('dynamodb')
+client = boto3.Session(
+    aws_access_key_id=keyid,
+    aws_secret_access_key=secret,
+    region_name=region
+)
+
+dynamodb = client.resource('dynamodb')
 table = dynamodb.Table('dashblox')
 
 # testvalue = table.get_item(Key={'db': 'levelcode'})
