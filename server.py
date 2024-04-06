@@ -24,6 +24,13 @@ from flask import Flask, request
 
 app = Flask(__name__)
 
+test = os.environ.get('keyid')
+print(test)
+
+# client = boto3.Session(
+    
+# )
+
 dynamodb = boto3.resource('dynamodb')
 table = dynamodb.Table('dashblox')
 
