@@ -1,34 +1,15 @@
-# import os
-# import http.server
-# import socketserver
-
-# from http import HTTPStatus
-
-# class Handler(http.server.SimpleHTTPRequestHandler):
-#     def do_GET(self):
-#         self.send_response(HTTPStatus.OK)
-#         self.end_headers()
-#         msg = 'Hello! you requested %s' % (self.path)
-#         self.wfile.write(msg.encode())
-
-
-# port = int(os.getenv('PORT', 80))
-# print('Listening on port %s' % (port))
-# httpd = socketserver.TCPServer(('', port), Handler)
-# httpd.serve_forever()
-
 import os
 import io
 import boto3
+from boto3.dynamodb.conditions import Attr
 from flask import Flask, request
+import decimal
 
 app = Flask(__name__)
-
 
 keyid = os.environ.get('keyid')
 secret = os.environ.get('secret')
 region = "us-west-2"
-# output = "json"
 
 client = boto3.Session(
     aws_access_key_id=keyid,
@@ -37,19 +18,79 @@ client = boto3.Session(
 )
 
 dynamodb = client.resource('dynamodb')
-table = dynamodb.Table('dashblox')
+table = dynamodb.Table('levels')
 
-# testvalue = table.get_item(Key={'db': 'levelcode'})
-# print(testvalue["Item"]["data"])
+# BACKEND DATABASE REQUIRED THINGS
+# SEARCH KEYS - DONE
+# ADD NEW KEYS
+# GET MOST RECENTLY ADDED KEYS
 
-@app.route('/', methods=['POST'])
+@app.route('/', methods=['GET'])
 def index():
+    if request.method == 'GET':
+        return "hello :)", 200
+    else:
+        return "Invalid method", 403
+
+@app.route('/get-key', methods=['POST'])
+def getkey():
     if request.method == 'POST':
-        requestdata = request.data.decode('UTF-8')
-        # print(requestdata)
-        item = table.get_item(Key={'db': requestdata})
-        data = item["Item"]["data"]
-        return data, 200
+        try:
+            requestdata = request.get_data().decode('UTF-8')
+            item = table.get_item(Key={'level': decimal.Decimal(requestdata)})
+            data = item["Item"]
+            return data, 200
+        except:
+            return "Request failed", 404
+    else:
+        return "Invalid method", 403
+
+@app.route('/search', methods=['POST'])
+def search():
+    if request.method == 'POST':
+        try:
+            searchquery = request.data.decode('UTF-8')
+            response = table.scan(FilterExpression=Attr('title').contains(searchquery))
+            data = response['Items']
+
+            while 'LastEvaluatedKey' in response:
+                response = table.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
+                data.extend(response['Items'])
+            
+            return data, 200
+        except:
+            return "Request failed", 404
+    else:
+        return "Invalid method", 403
+
+@app.route('/add-level', methods=['POST'])
+def addlevel():
+    if request.method == 'POST':
+
+        response = table.update_item(
+            Key={'level': 0},
+            UpdateExpression="ADD #cnt :val",
+            ExpressionAttributeNames={'#cnt': 'count'},
+            ExpressionAttributeValues={':val': 1},
+            ReturnValues="UPDATED_NEW"
+        )
+        
+        newLevelId = response['Attributes']['count']
+        
+        data = request.get_json()
+        print(data)
+
+        response = table.put_item(
+            Item={
+                'level': newLevelId,
+                'title': data["title"],
+                'data': data["data"],
+                'rating': 0,
+                'timestamp': data["timestamp"],
+            }
+        )
+        
+        return "OK", 200
     else:
         return "Invalid method", 403
 
