@@ -38,6 +38,7 @@ def getkey():
             
             item = table.get_item(Key={'id': decimal.Decimal(data["key"])})
             data = item["Item"]
+            
             return data, 200
         except:
             return "Request failed", 404
@@ -53,7 +54,16 @@ def search():
             if data["secret"] != secret:
                 return "Invalid secret", 403
             
-            response = table.scan(FilterExpression=Attr(data["attribute"]).contains(data["query"]))
+            response = None
+
+            if data["condition"] == "eq":
+                response = table.scan(FilterExpression=Attr(data["attribute"]).eq(data["query"]))
+            elif data["condition"] == "cont":
+                response = table.scan(FilterExpression=Attr(data["attribute"]).contains(data["query"]))
+            
+            if response == None:
+                return "No item", 403
+            
             data = response['Items']
             
             while 'LastEvaluatedKey' in response:
