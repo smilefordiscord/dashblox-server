@@ -99,9 +99,12 @@ def removeLevel():
         
         if data["secret"] != secret:
             return "Invalid secret", 403
-        
+
         response = table.delete_item(
-            Key={"id": data["id"]}
+            Key={
+                'id': data["id"],
+            },
+            ConditionExpression="attribute_exists (id)",
         )
 
         return "OK", 200
