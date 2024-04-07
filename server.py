@@ -62,6 +62,11 @@ def search():
 def addlevel():
     if request.method == 'POST':
 
+        data = request.get_json()
+        
+        if data["secret"] != secret:
+            return "Invalid secret", 403
+        
         response = table.update_item(
             Key={'id': 0},
             UpdateExpression="ADD #cnt :val",
@@ -72,17 +77,30 @@ def addlevel():
         
         newLevelId = response['Attributes']['count']
         
-        data = request.get_json()
-
         response = table.put_item(
             Item={
                 'id': newLevelId,
                 'title': data["title"],
                 'data': data["data"],
-                'rating': 0,
+                'owner': data["owner"],
                 'timestamp': data["timestamp"],
+                'rating': 0,
             }
         )
+        
+        return "OK", 200
+    else:
+        return "Invalid method", 403
+
+@app.route('/remove-level', methods=['POST'])
+def removeLevel():
+    if request.method == 'POST':
+        data = request.get_json()
+        
+        if data["secret"] != secret:
+            return "Invalid secret", 403
+
+        table.delete_item(Key={"id": data["id"]})
         
         return "OK", 200
     else:
