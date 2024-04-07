@@ -20,11 +20,6 @@ client = boto3.Session(
 dynamodb = client.resource('dynamodb')
 table = dynamodb.Table('levels')
 
-# BACKEND DATABASE REQUIRED THINGS
-# SEARCH KEYS - DONE
-# ADD NEW KEYS
-# GET MOST RECENTLY ADDED KEYS
-
 @app.route('/', methods=['GET'])
 def index():
     if request.method == 'GET':
@@ -37,7 +32,7 @@ def getkey():
     if request.method == 'POST':
         try:
             requestdata = request.get_data().decode('UTF-8')
-            item = table.get_item(Key={'level': decimal.Decimal(requestdata)})
+            item = table.get_item(Key={'id': decimal.Decimal(requestdata)})
             data = item["Item"]
             return data, 200
         except:
@@ -68,7 +63,7 @@ def addlevel():
     if request.method == 'POST':
 
         response = table.update_item(
-            Key={'level': 0},
+            Key={'id': 0},
             UpdateExpression="ADD #cnt :val",
             ExpressionAttributeNames={'#cnt': 'count'},
             ExpressionAttributeValues={':val': 1},
@@ -78,11 +73,10 @@ def addlevel():
         newLevelId = response['Attributes']['count']
         
         data = request.get_json()
-        print(data)
 
         response = table.put_item(
             Item={
-                'level': newLevelId,
+                'id': newLevelId,
                 'title': data["title"],
                 'data': data["data"],
                 'rating': 0,
