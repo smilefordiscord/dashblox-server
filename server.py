@@ -99,9 +99,11 @@ def removeLevel():
         
         if data["secret"] != secret:
             return "Invalid secret", 403
-
-        table.delete_item(Key={"id": data["id"]})
         
+        response = table.delete_item(
+            Key={"id": data["id"]}
+        )
+
         return "OK", 200
     else:
         return "Invalid method", 403
