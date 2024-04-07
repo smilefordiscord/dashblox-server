@@ -31,8 +31,12 @@ def index():
 def getkey():
     if request.method == 'POST':
         try:
-            requestdata = request.get_data().decode('UTF-8')
-            item = table.get_item(Key={'id': decimal.Decimal(requestdata)})
+            data = request.get_json()
+            
+            if data["secret"] != secret:
+                return "Invalid secret", 403
+            
+            item = table.get_item(Key={'id': decimal.Decimal(data["key"])})
             data = item["Item"]
             return data, 200
         except:
@@ -44,8 +48,12 @@ def getkey():
 def search():
     if request.method == 'POST':
         try:
-            searchquery = request.data.decode('UTF-8')
-            response = table.scan(FilterExpression=Attr('title').contains(searchquery))
+            data = request.get_json()
+            
+            if data["secret"] != secret:
+                return "Invalid secret", 403
+            
+            response = table.scan(FilterExpression=Attr('title').contains(data["query"]))
             data = response['Items']
 
             while 'LastEvaluatedKey' in response:
@@ -101,9 +109,7 @@ def removeLevel():
             return "Invalid secret", 403
 
         response = table.delete_item(
-            Key={
-                'id': data["id"],
-            },
+            Key={'id': data["id"]},
             ConditionExpression="attribute_exists (id)",
         )
 
