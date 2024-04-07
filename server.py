@@ -66,24 +66,6 @@ def search():
     else:
         return "Invalid method", 403
 
-@app.route('/query', methods=['POST'])
-def search():
-    if request.method == 'POST':
-        try:
-            data = request.get_json()
-            
-            if data["secret"] != secret:
-                return "Invalid secret", 403
-            
-            response = table.query(KeyConditionExpression=Key("year").eq(year))
-            data = response['Items']
-            
-            return data, 200
-        except:
-            return "Request failed", 404
-    else:
-        return "Invalid method", 403
-
 @app.route('/add-level', methods=['POST'])
 def addlevel():
     if request.method == 'POST':
