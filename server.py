@@ -140,21 +140,18 @@ def glro():
         levels = []
         
         i = 0
-        
-        # while len(levels) < 10 or decimal.Decimal(data["key"]) - i < 1:
-        while i < 10:
-            # try:
+        lvlCount = 0
+
+        while int(data["key"]) - i > 1 and lvlCount < 10:
+            try:
                 key =  int(data["key"]) - i
                 rawitem = table.get_item(Key={'id': decimal.Decimal(key)})
                 item = rawitem["Item"]
                 levels.append(item)
+                lvlCount += 1
                 i += 1
-                print("add")
-            # except:
-            #     i += 1
-            #     print("skip")
-        
-        # levels = json.loads(levels)
+            except:
+                i += 1
         
         return levels, 200
     else:
