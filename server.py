@@ -149,7 +149,7 @@ def glro():
         #     except:
         #         i += 1
 
-        levels = json.dump(levels)
+        levels = json.dumps(levels)
         
         return levels, 200
     else:
