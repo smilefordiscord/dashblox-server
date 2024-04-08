@@ -137,17 +137,17 @@ def glro():
             return "Invalid secret", 403
         
         levels = []
-
+        
         i = 0
-
-        while len(levels) < 10 or decimal.Decimal(data["key"]) - i < 1:
-            try:
-                item = table.get_item(Key={'id': decimal.Decimal(data["key"]) - i})
-                data = json.dump(item["Item"])
-                levels.append(data)
-                i += 1
-            except:
-                i += 1
+        
+        # while len(levels) < 10 or decimal.Decimal(data["key"]) - i < 1:
+        #     try:
+        #         item = table.get_item(Key={'id': decimal.Decimal(data["key"]) - i})
+        #         data = json.dump(item["Item"])
+        #         levels.append(data)
+        #         i += 1
+        #     except:
+        #         i += 1
 
         levels = json.dump(levels)
         
