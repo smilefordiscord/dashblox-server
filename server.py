@@ -149,8 +149,10 @@ def glro():
                 data = item["Item"]
                 levels.append(data)
                 i += 1
+                print("add")
             except:
                 i += 1
+                print("skip")
         
         # levels = json.loads(levels)
         
