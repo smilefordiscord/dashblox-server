@@ -4,6 +4,7 @@ import boto3
 from boto3.dynamodb.conditions import Attr
 from flask import Flask, request
 import decimal
+import json
 
 app = Flask(__name__)
 
@@ -124,6 +125,33 @@ def removeLevel():
         )
 
         return "OK", 200
+    else:
+        return "Invalid method", 403
+
+@app.route('/glro', methods=['POST'])
+def glro():
+    if request.method == 'POST':
+        data = request.get_json()
+        
+        if data["secret"] != secret:
+            return "Invalid secret", 403
+        
+        levels = []
+
+        i = 0
+
+        while len(levels) < 10 or decimal.Decimal(data["key"]) - i < 1:
+            try:
+                item = table.get_item(Key={'id': decimal.Decimal(data["key"]) - i})
+                data = json.dump(item["Item"])
+                levels.append(data)
+                i += 1
+            except:
+                i += 1
+
+        levels = json.dump(levels)
+        
+        return levels, 200
     else:
         return "Invalid method", 403
 
