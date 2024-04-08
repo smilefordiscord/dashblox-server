@@ -145,9 +145,9 @@ def glro():
         while i < 10:
             # try:
                 key =  int(data["key"]) - i
-                item = table.get_item(Key={'id': decimal.Decimal(key)})
-                data = item["Item"]
-                levels.append(data)
+                request = table.get_item(Key={'id': decimal.Decimal(key)})
+                item = request["Item"]
+                levels.append(item)
                 i += 1
                 print("add")
             # except:
