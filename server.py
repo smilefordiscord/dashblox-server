@@ -140,7 +140,8 @@ def glro():
         
         i = 0
         
-        while len(levels) < 10 or decimal.Decimal(data["key"]) - i < 1:
+        # while len(levels) < 10 or decimal.Decimal(data["key"]) - i < 1:
+        while i < 10:
             try:
                 item = table.get_item(Key={'id': decimal.Decimal(data["key"]) - i})
                 data = json.dumps(item["Item"])
