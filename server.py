@@ -144,8 +144,8 @@ def glro():
         while i < 10:
             try:
                 item = table.get_item(Key={'id': decimal.Decimal(data["key"]) - i})
-                data = json.dumps(item["Item"])
-                levels.append(data)
+                data = item["Item"]
+                levels = levels.append(data)
                 i += 1
             except:
                 i += 1
