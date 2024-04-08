@@ -143,16 +143,16 @@ def glro():
         
         # while len(levels) < 10 or decimal.Decimal(data["key"]) - i < 1:
         while i < 10:
-            try:
+            # try:
                 key =  int(data["key"]) - i
                 item = table.get_item(Key={'id': decimal.Decimal(key)})
                 data = item["Item"]
                 levels.append(data)
                 i += 1
                 print("add")
-            except:
-                i += 1
-                print("skip")
+            # except:
+            #     i += 1
+            #     print("skip")
         
         # levels = json.loads(levels)
         
