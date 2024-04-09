@@ -1,26 +1,22 @@
-import json.tool
-import os
-import io
-import boto3
-from boto3.dynamodb.conditions import Attr
+import psycopg2
+import time
 from flask import Flask, request
-import decimal
 import json
+from json.encoder import JSONEncoder
+import os
+from flask import Flask, request
 
 app = Flask(__name__)
 
-keyid = os.environ.get('keyid')
 secret = os.environ.get('secret')
-region = "us-west-2"
 
-client = boto3.Session(
-    aws_access_key_id=keyid,
-    aws_secret_access_key=secret,
-    region_name=region
+conn = psycopg2.connect(
+    host=os.environ.get('host'),
+    port="5432",
+    dbname=os.environ.get('dbname'),
+    user=os.environ.get('user'),
+    password=secret,
 )
-
-dynamodb = client.resource('dynamodb')
-table = dynamodb.Table('levels')
 
 @app.route('/', methods=['GET'])
 def index():
@@ -29,20 +25,62 @@ def index():
     else:
         return "Invalid method", 403
 
+@app.route('/execute', methods=['POST'])
+def execute():
+    if request.method == 'POST':
+        data = request.get_json()
+        if data["secret"] != secret:
+            return "Invalid secret", 403
+        
+        cursor = conn.cursor()
+        try:
+            cursor.execute(data["request"])
+            returnLevels =  JSONEncoder().encode(cursor.fetchall())
+            cursor.close()
+            return returnLevels, 200
+        except:
+            cursor.close()
+            return "Request failed", 404
+    else:
+        return "Invalid method", 403
+
+@app.route('/last-key', methods=['POST'])
+def getLastkey():
+    if request.method == 'POST':
+        data = request.get_json()
+        if data["secret"] != secret:
+            return "Invalid secret", 403
+        
+        cursor = conn.cursor()
+        try:
+            cursor.execute("SELECT * FROM public.levels ORDER BY id DESC LIMIT 1")
+            returnLevels =  JSONEncoder().encode(cursor.fetchone())
+            
+            cursor.close()
+            return returnLevels, 200
+        except:
+            cursor.close()
+            return "Request failed", 404
+    else:
+        return "Invalid method", 403
+
 @app.route('/get-key', methods=['POST'])
 def getkey():
     if request.method == 'POST':
+        data = request.get_json()
+        if data["secret"] != secret:
+            return "Invalid secret", 403
+        
+        cursor = conn.cursor()
         try:
-            data = request.get_json()
-            
-            if data["secret"] != secret:
-                return "Invalid secret", 403
-            
-            item = table.get_item(Key={'id': decimal.Decimal(data["key"])})
-            data = item["Item"]
-            
-            return data, 200
+            id: int = 17
+            cursor.execute("SELECT * FROM public.levels WHERE id = %(id)s", {'id':id})
+            returnLevels =  JSONEncoder().encode(cursor.fetchone())
+
+            cursor.close()
+            return returnLevels, 200
         except:
+            cursor.close()
             return "Request failed", 404
     else:
         return "Invalid method", 403
@@ -50,30 +88,29 @@ def getkey():
 @app.route('/search', methods=['POST'])
 def search():
     if request.method == 'POST':
+        data = request.get_json()
+        if data["secret"] != secret:
+            return "Invalid secret", 403
+        
+        cursor = conn.cursor()
         try:
-            data = request.get_json()
             
-            if data["secret"] != secret:
-                return "Invalid secret", 403
+            col = data["attribute"]
+            substring = data["query"]
+            rated = data["rated"]
+            if rated == True:
+                cursor.execute("SELECT * FROM public.levels WHERE %(col)s ILIKE %(sub)s AND difficulty > 0", {"col":col, "sub": '%'+substring+'%'})
+            else:
+                cursor.execute("SELECT * FROM public.levels WHERE %(col)s ILIKE %(sub)s", {"col":col, "sub": '%'+substring+'%'})
             
-            response = None
+            returnLevels = []
+            for item in cursor:
+                returnLevels.append(JSONEncoder().encode(item))
 
-            if data["condition"] == "eq":
-                response = table.scan(FilterExpression=Attr(data["attribute"]).eq(data["query"]))
-            elif data["condition"] == "cont":
-                response = table.scan(FilterExpression=Attr(data["attribute"]).contains(data["query"]))
-            
-            if response == None:
-                return "No item", 403
-            
-            data = response['Items']
-            
-            while 'LastEvaluatedKey' in response:
-                response = table.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
-                data.extend(response['Items'])
-            
-            return data, 200
+            cursor.close()
+            return returnLevels, 200
         except:
+            cursor.close()
             return "Request failed", 404
     else:
         return "Invalid method", 403
@@ -81,33 +118,23 @@ def search():
 @app.route('/add-level', methods=['POST'])
 def addlevel():
     if request.method == 'POST':
+        cursor = conn.cursor()
 
         data = request.get_json()
-        
         if data["secret"] != secret:
+            cursor.close()
             return "Invalid secret", 403
         
-        response = table.update_item(
-            Key={'id': 0},
-            UpdateExpression="ADD #cnt :val",
-            ExpressionAttributeNames={'#cnt': 'count'},
-            ExpressionAttributeValues={':val': 1},
-            ReturnValues="UPDATED_NEW"
-        )
+        title = data["title"]
+        desc = data["desc"]
+        lvldata = data["data"]
+        owner = data["owner"]
+        difficulty = data["difficulty"]
+        timestamp = data["timestamp"]
+        cursor.execute("INSERT INTO public.levels (title, description, data, owner, difficulty, rating, timestamp) VALUES (%(title)s, %(desc)s, %(data)s, %(owner)s, %(difficulty)s, %(rating)s, %(timestamp)s);", {"title":title,"desc":desc,"data":lvldata,"owner":owner,"difficulty":difficulty,"rating":0,"timestamp":timestamp})
         
-        newLevelId = response['Attributes']['count']
-        
-        response = table.put_item(
-            Item={
-                'id': newLevelId,
-                'title': data["title"],
-                'data': data["data"],
-                'owner': data["owner"],
-                'timestamp': data["timestamp"],
-                'rating': 0,
-            }
-        )
-        
+        conn.commit()
+        cursor.close()
         return "OK", 200
     else:
         return "Invalid method", 403
@@ -116,16 +143,18 @@ def addlevel():
 def removeLevel():
     if request.method == 'POST':
         data = request.get_json()
-        
         if data["secret"] != secret:
             return "Invalid secret", 403
-
-        response = table.delete_item(
-            Key={'id': data["id"]},
-            ConditionExpression="attribute_exists (id)",
-        )
-
-        return "OK", 200
+        
+        cursor = conn.cursor()
+        try:
+            cursor.execute("DELETE FROM public.levels WHERE id = %(id)s;", {"id":data["id"]})
+            conn.commit()
+            cursor.close()
+            return "OK", 200
+        except:
+            cursor.close()
+            return "Request failed", 404
     else:
         return "Invalid method", 403
 
@@ -137,23 +166,23 @@ def glro():
         if data["secret"] != secret:
             return "Invalid secret", 403
         
-        levels = []
-        
-        i = 0
-        lvlCount = 0
-
-        while int(data["key"]) - i > 1 and lvlCount < 10:
-            try:
-                key =  int(data["key"]) - i
-                rawitem = table.get_item(Key={'id': decimal.Decimal(key)})
-                item = rawitem["Item"]
-                levels.append(item)
-                lvlCount += 1
-                i += 1
-            except:
-                i += 1
-        
-        return levels, 200
+        cursor = conn.cursor()
+        try:
+            rated = data["rated"]
+            if rated == True:
+                cursor.execute("SELECT * FROM public.levels WHERE id <= %(id)s AND difficulty > 0 ORDER BY id DESC LIMIT %(length)s", {"id":data["id"],"length":data["length"]})
+            else:
+                cursor.execute("SELECT * FROM public.levels WHERE id <= %(id)s ORDER BY id DESC LIMIT %(length)s", {"id":data["id"],"length":data["length"]})
+            
+            returnLevels = []
+            for item in cursor:
+                returnLevels.append(JSONEncoder().encode(item))
+            
+            cursor.close()
+            return returnLevels, 200
+        except:
+            cursor.close()
+            return "Request failed", 404
     else:
         return "Invalid method", 403
 
