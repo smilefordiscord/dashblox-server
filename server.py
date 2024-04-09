@@ -34,9 +34,9 @@ def execute():
         
         cursor = conn.cursor()
         # try:
-        cursor.execute(data["request"])
         returnLevels = None
         try:
+            cursor.execute(data["request"])
             returnLevels =  JSONEncoder().encode(cursor.fetchall())
         except:
             returnLevels = None
