@@ -39,7 +39,7 @@ def execute():
                 cursor.execute(data["request"])
                 returnLevels =  JSONEncoder().encode(cursor.fetchall())
             except:
-                returnLevels = {}
+                returnLevels = ""
             conn.commit()
             cursor.close()
             return returnLevels, 200
