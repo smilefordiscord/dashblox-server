@@ -33,14 +33,16 @@ def execute():
             return "Invalid secret", 403
         
         cursor = conn.cursor()
-        try:
-            cursor.execute(data["request"])
-            returnLevels =  JSONEncoder().encode(cursor.fetchall())
-            cursor.close()
-            return returnLevels, 200
-        except:
-            cursor.close()
-            return "Request failed", 404
+        # try:
+        cursor.execute(data["request"])
+        returnLevels =  JSONEncoder().encode(cursor.fetchall())
+        conn.commit()
+        cursor.close()
+        return returnLevels, 200
+        # except:
+        #     conn.commit()
+        #     cursor.close()
+        #     return "Request failed", 404
     else:
         return "Invalid method", 403
 
