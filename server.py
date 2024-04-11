@@ -34,7 +34,7 @@ def execute():
         
         cursor = conn.cursor()
         try:
-            returnLevels = None
+            returnLevels = {}
             try:
                 cursor.execute(data["request"])
                 returnLevels =  JSONEncoder().encode(cursor.fetchall())
@@ -100,19 +100,23 @@ def search():
         
         cursor = conn.cursor()
         try:
-            
             col = data["attribute"]
             substring = data["query"]
             rated = data["rated"]
             if rated == True:
-                cursor.execute("SELECT * FROM public.levels WHERE %(col)s ILIKE %(sub)s AND difficulty > 0", {"col":col, "sub": '%'+substring+'%'})
+                cursor.execute("SELECT * FROM public.levels WHERE %(col)s ILIKE '%(sub)s' AND difficulty > 0", {"col":col, "sub": '%'+substring+'%'})
             else:
-                cursor.execute("SELECT * FROM public.levels WHERE %(col)s ILIKE %(sub)s", {"col":col, "sub": '%'+substring+'%'})
+                cursor.execute("SELECT * FROM public.levels WHERE %(col)s ILIKE '%(sub)s'", {"col":col, "sub": '%'+substring+'%'})
             
-            returnLevels = []
-            for item in cursor:
-                returnLevels.append(JSONEncoder().encode(item))
-
+            returnLevels = {}
+            try:
+                cursor.execute(data["request"])
+                returnLevels =  JSONEncoder().encode(cursor.fetchall())
+            except:
+                returnLevels = {}
+            # for item in cursor:
+            #     returnLevels.append(JSONEncoder().encode(item))
+            
             cursor.close()
             return returnLevels, 200
         except:
