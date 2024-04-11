@@ -107,9 +107,9 @@ def search():
         # print(substring)
         # print(rated)
         if rated == "true":
-            cursor.execute("SELECT * FROM public.levels WHERE %(col)s ILIKE '%(sub)s' AND difficulty > 0", {"col":col, "sub": '%'+substring+'%'})
+            cursor.execute("SELECT * FROM public.levels WHERE %(col)s ILIKE %(sub)s AND difficulty > 0", {"col":col, "sub": '%'+substring+'%'})
         else:
-            cursor.execute("SELECT * FROM public.levels WHERE %(col)s ILIKE '%(sub)s'", {"col":col, "sub": '%'+substring+'%'})
+            cursor.execute("SELECT * FROM public.levels WHERE %(col)s ILIKE %(sub)s", {"col":col, "sub": '%'+substring+'%'})
         
         returnLevels = {}
         try:
