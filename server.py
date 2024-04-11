@@ -99,32 +99,32 @@ def search():
             return "Invalid secret", 403
         
         cursor = conn.cursor()
+        # try:
+        col = data["attribute"]
+        substring = data["query"]
+        rated = data["rated"]
+        # print(col)
+        # print(substring)
+        # print(rated)
+        if rated == "true":
+            cursor.execute("SELECT * FROM public.levels WHERE %(col)s ILIKE '%(sub)s' AND difficulty > 0", {"col":col, "sub": '%'+substring+'%'})
+        else:
+            cursor.execute("SELECT * FROM public.levels WHERE %(col)s ILIKE '%(sub)s'", {"col":col, "sub": '%'+substring+'%'})
+        
+        returnLevels = {}
         try:
-            col = data["attribute"]
-            substring = data["query"]
-            rated = data["rated"]
-            print(col)
-            print(substring)
-            print(rated)
-            if rated == "true":
-                cursor.execute("SELECT * FROM public.levels WHERE %(col)s ILIKE '%(sub)s' AND difficulty > 0", {"col":col, "sub": '%'+substring+'%'})
-            else:
-                cursor.execute("SELECT * FROM public.levels WHERE %(col)s ILIKE '%(sub)s'", {"col":col, "sub": '%'+substring+'%'})
-            
-            returnLevels = {}
-            try:
-                cursor.execute(data["request"])
-                returnLevels =  JSONEncoder().encode(cursor.fetchall())
-            except:
-                returnLevels = {}
-            # for item in cursor:
-            #     returnLevels.append(JSONEncoder().encode(item))
-
-            cursor.close()
-            return returnLevels, 200
+            cursor.execute(data["request"])
+            returnLevels =  JSONEncoder().encode(cursor.fetchall())
         except:
-            cursor.close()
-            return "Request failed", 404
+            returnLevels = {}
+        # for item in cursor:
+        #     returnLevels.append(JSONEncoder().encode(item))
+
+        cursor.close()
+        return returnLevels, 200
+        # except:
+        #     cursor.close()
+        #     return "Request failed", 404
     else:
         return "Invalid method", 403
 
