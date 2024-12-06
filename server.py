@@ -201,7 +201,7 @@ def glro():
         return "Invalid method", 403
 
 @app.route('/cs-add-item', methods=['POST'])
-def glro():
+def slopitemadd():
     if request.method == 'POST':
         cursor = conn.cursor()
 
