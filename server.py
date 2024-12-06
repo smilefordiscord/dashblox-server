@@ -182,6 +182,7 @@ def glro():
         cursor = conn.cursor()
         try:
             rated = data["rated"]
+            
             if rated == True:
                 cursor.execute("SELECT * FROM public.levels WHERE id <= %(id)s AND difficulty > 0 ORDER BY id DESC LIMIT %(length)s", {"id":data["id"],"length":data["length"]})
             else:
@@ -196,6 +197,29 @@ def glro():
         except:
             cursor.close()
             return "Request failed", 404
+    else:
+        return "Invalid method", 403
+
+@app.route('/cs-add-item', methods=['POST'])
+def glro():
+    if request.method == 'POST':
+        cursor = conn.cursor()
+
+        data = request.get_json()
+        if data["secret"] != secret:
+            cursor.close()
+            return "Invalid secret", 403
+        
+        itemId = data["id"]
+        owner = data["owner"]
+        pattern = data["pattern"]
+        statTrak = data["st"]
+        wear = data["wear"]
+        cursor.execute("INSERT INTO public.rsitems (itemId, owner, pattern, statTrak, wear) VALUES (%(itemId)s, %(owner)s, %(pattern)s, %(statTrak)s, %(wear)s);", {"itemId":itemId,"owner":owner,"pattern":pattern,"statTrak":statTrak,"wear":wear})
+        
+        conn.commit()
+        cursor.close()
+        return "OK", 200
     else:
         return "Invalid method", 403
 
