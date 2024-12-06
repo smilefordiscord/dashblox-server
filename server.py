@@ -210,12 +210,12 @@ def slopitemadd():
             cursor.close()
             return "Invalid secret", 403
         
-        itemId = data["id"]
+        itemid = data["id"]
         owner = data["owner"]
         pattern = data["pattern"]
-        statTrak = data["st"]
+        stattrak = data["st"]
         wear = data["wear"]
-        cursor.execute("INSERT INTO public.rsitems (itemId, owner, pattern, statTrak, wear) VALUES (%(itemId)s, %(owner)s, %(pattern)s, %(statTrak)s, %(wear)s);", {"itemId":itemId,"owner":owner,"pattern":pattern,"statTrak":statTrak,"wear":wear})
+        cursor.execute("INSERT INTO public.rsitems (itemid, owner, pattern, stattrak, wear) VALUES (%(itemid)s, %(owner)s, %(pattern)s, %(stattrak)s, %(wear)s);", {"itemid":itemid,"owner":owner,"pattern":pattern,"stattrak":stattrak,"wear":wear})
         
         conn.commit()
         cursor.close()
