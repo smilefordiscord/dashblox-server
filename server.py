@@ -216,10 +216,14 @@ def slopitemadd():
         stattrak = data["st"]
         wear = data["wear"]
         cursor.execute("INSERT INTO public.rsitems (itemid, owner, pattern, stattrak, wear) VALUES (%(itemid)s, %(owner)s, %(pattern)s, %(stattrak)s, %(wear)s);", {"itemid":itemid,"owner":owner,"pattern":pattern,"stattrak":stattrak,"wear":wear})
-        
         conn.commit()
+
+        returnLevels = []
+        for item in cursor:
+            returnLevels.append(JSONEncoder().encode(item))
+        
         cursor.close()
-        return "OK", 200
+        return returnLevels, 200
     else:
         return "Invalid method", 403
 
