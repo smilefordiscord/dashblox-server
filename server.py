@@ -200,8 +200,8 @@ def glro():
     else:
         return "Invalid method", 403
 
-@app.route('/cs-add-item', methods=['POST'])
-def slopitemadd():
+@app.route('/get-inventory', methods=['POST'])
+def csAddItem():
     if request.method == 'POST':
         cursor = conn.cursor()
 
@@ -219,6 +219,27 @@ def slopitemadd():
         conn.commit()
         
         returnedLvls = JSONEncoder().encode(cursor.fetchone())
+        
+        cursor.close()
+        return returnedLvls, 200
+    else:
+        return "Invalid method", 403
+
+@app.route('/cs-get-inv', methods=['POST'])
+def csGetInv():
+    if request.method == 'POST':
+        cursor = conn.cursor()
+
+        data = request.get_json()
+        if data["secret"] != secret:
+            cursor.close()
+            return "Invalid secret", 403
+        
+        owner = data["owner"]
+        cursor.execute("SELECT * FROM public.rsitems WHERE owner = %(owner)s", {"owner":owner})
+        conn.commit()
+        
+        returnedLvls = JSONEncoder().encode(cursor.fetchall())
         
         cursor.close()
         return returnedLvls, 200
