@@ -247,8 +247,6 @@ def csAddItems():
             conn.commit()
             returnedLvls.append(cursor.fetchone()[0])
         
-        print(returnedLvls)
-        
         cursor.close()
         return returnedLvls, 200
     else:
