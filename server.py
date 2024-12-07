@@ -248,7 +248,6 @@ def csAddItems():
             returnedLvls.append(cursor.fetchone()[0])
         
         print(returnedLvls)
-        returnedLvls = JSONEncoder.encode(returnedLvls)
         
         cursor.close()
         return returnedLvls, 200
