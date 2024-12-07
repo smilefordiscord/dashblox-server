@@ -244,12 +244,11 @@ def csAddItems():
             stattrak = item["st"]
             wear = item["wear"]
             cursor.execute("INSERT INTO public.rsitems (itemid, owner, pattern, stattrak, wear) VALUES (%(itemid)s, %(owner)s, %(pattern)s, %(stattrak)s, %(wear)s) RETURNING id;", {"itemid":itemid,"owner":owner,"pattern":pattern,"stattrak":stattrak,"wear":wear})
-            returnedLvls.append(JSONEncoder.encode(cursor.fetchone()))
-        
-        conn.commit()
+            conn.commit()
+            returnedLvls.append(cursor.fetchone())
         
         cursor.close()
-        return returnedLvls, 200
+        return JSONEncoder.encode(returnedLvls), 200
     else:
         return "Invalid method", 403
 
