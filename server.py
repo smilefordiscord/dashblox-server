@@ -225,6 +225,33 @@ def csAddItem():
     else:
         return "Invalid method", 403
 
+@app.route('/cs-add-items', methods=['POST'])
+def csAddItems():
+    if request.method == 'POST':
+        cursor = conn.cursor()
+
+        data = request.get_json()
+        if data["secret"] != secret:
+            cursor.close()
+            return "Invalid secret", 403
+        
+        for item in data["items"]:
+            itemid = item["id"]
+            owner = item["owner"]
+            pattern = item["pattern"]
+            stattrak = item["st"]
+            wear = item["wear"]
+            cursor.execute("INSERT INTO public.rsitems (itemid, owner, pattern, stattrak, wear) VALUES (%(itemid)s, %(owner)s, %(pattern)s, %(stattrak)s, %(wear)s) RETURNING id;", {"itemid":itemid,"owner":owner,"pattern":pattern,"stattrak":stattrak,"wear":wear})
+        
+        conn.commit()
+        
+        returnedLvls = JSONEncoder().encode(cursor.fetchone())
+        
+        cursor.close()
+        return returnedLvls, 200
+    else:
+        return "Invalid method", 403
+
 @app.route('/cs-get-inv', methods=['POST'])
 def csGetInv():
     if request.method == 'POST':
