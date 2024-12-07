@@ -247,8 +247,10 @@ def csAddItems():
             conn.commit()
             returnedLvls.append(cursor.fetchone())
         
+        print(returnedLvls)
+
         cursor.close()
-        return JSONEncoder.encode(returnedLvls), 200
+        return returnedLvls, 200
     else:
         return "Invalid method", 403
 
