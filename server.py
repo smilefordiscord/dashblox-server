@@ -200,7 +200,7 @@ def glro():
     else:
         return "Invalid method", 403
 
-@app.route('/get-add-item', methods=['POST'])
+@app.route('/cs-add-item', methods=['POST'])
 def csAddItem():
     if request.method == 'POST':
         cursor = conn.cursor()
