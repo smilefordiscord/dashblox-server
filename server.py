@@ -245,7 +245,7 @@ def csAddItems():
             wear = item["wear"]
             cursor.execute("INSERT INTO public.rsitems (itemid, owner, pattern, stattrak, wear) VALUES (%(itemid)s, %(owner)s, %(pattern)s, %(stattrak)s, %(wear)s) RETURNING id;", {"itemid":itemid,"owner":owner,"pattern":pattern,"stattrak":stattrak,"wear":wear})
             conn.commit()
-            returnedLvls.append(cursor.fetchone())
+            returnedLvls.append(cursor.fetchone()[0])
         
         print(returnedLvls)
 
