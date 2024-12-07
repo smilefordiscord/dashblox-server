@@ -235,6 +235,8 @@ def csAddItems():
             cursor.close()
             return "Invalid secret", 403
         
+        returnedLvls = []
+        
         for item in data["items"]:
             itemid = item["id"]
             owner = item["owner"]
@@ -242,13 +244,12 @@ def csAddItems():
             stattrak = item["st"]
             wear = item["wear"]
             cursor.execute("INSERT INTO public.rsitems (itemid, owner, pattern, stattrak, wear) VALUES (%(itemid)s, %(owner)s, %(pattern)s, %(stattrak)s, %(wear)s) RETURNING id;", {"itemid":itemid,"owner":owner,"pattern":pattern,"stattrak":stattrak,"wear":wear})
+            returnedLvls.append(cursor.fetchone())
         
         conn.commit()
         
-        returnedLvls = JSONEncoder().encode(cursor.fetchall())
-        
         cursor.close()
-        return returnedLvls, 200
+        return JSONEncoder.encode(returnedLvls), 200
     else:
         return "Invalid method", 403
 
