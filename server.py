@@ -245,7 +245,7 @@ def csAddItems():
         
         conn.commit()
         
-        returnedLvls = JSONEncoder().encode(cursor.fetchone())
+        returnedLvls = JSONEncoder().encode(cursor.fetchall())
         
         cursor.close()
         return returnedLvls, 200
