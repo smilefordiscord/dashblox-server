@@ -292,16 +292,15 @@ def csGetPlayerData():
             returnedLvls = []
         
         cursor.execute("SELECT * FROM public.rsplayerdata WHERE userId = %(owner)s", {"owner":owner})
-        
+
         playerData = cursor.fetchone()
         if playerData == None:
             playerData = []
         
-        returnDataRaw = [playerData, returnedLvls]
-        returnData = JSONEncoder.encode(returnDataRaw)
-
+        returnData = [playerData, returnedLvls]
+        
         cursor.close()
-        return returnData, 200
+        return json.dumps(returnData), 200
     else:
         return "Invalid method", 403
 
