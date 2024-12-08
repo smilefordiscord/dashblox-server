@@ -263,16 +263,13 @@ def csDeleteItems():
             cursor.close()
             return "Invalid secret", 403
         
-        amtDeleted = 0
-        
         for id in data["ids"]:
             cursor.execute("DELETE FROM public.rsitems WHERE id = %(id)s", {"id": id})
-            amtDeleted += 1
         
         conn.commit()
-        
+
         cursor.close()
-        return amtDeleted, 200
+        return "OK", 200
     else:
         return "Invalid method", 403
 
