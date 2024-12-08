@@ -273,6 +273,34 @@ def csGetInv():
     else:
         return "Invalid method", 403
 
+@app.route('/cs-get-player-data', methods=['POST'])
+def csGetPlayerData():
+    if request.method == 'POST':
+        cursor = conn.cursor()
+
+        data = request.get_json()
+        if data["secret"] != secret:
+            cursor.close()
+            return "Invalid secret", 403
+        
+        owner = data["owner"]
+        cursor.execute("SELECT * FROM public.rsitems WHERE owner = %(owner)s", {"owner":owner})
+        conn.commit()
+        
+        returnedLvls = cursor.fetchall()
+
+        cursor.execute("SELECT * FROM public.rsplayerdata WHERE userId = %(owner)s", {"owner":owner})
+
+        playerData = cursor.fetchone()
+        print(playerData)
+
+        returnData = JSONEncoder.encode([playerData, returnedLvls])
+
+        cursor.close()
+        return returnedLvls, 200
+    else:
+        return "Invalid method", 403
+
 print("Starting server")
 
 app.run(host='0.0.0.0', port=8080)
