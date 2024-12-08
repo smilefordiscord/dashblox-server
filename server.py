@@ -253,6 +253,29 @@ def csAddItems():
     else:
         return "Invalid method", 403
 
+@app.route('/cs-delete-items', methods=['POST'])
+def csDeleteItems():
+    if request.method == 'POST':
+        cursor = conn.cursor()
+
+        data = request.get_json()
+        if data["secret"] != secret:
+            cursor.close()
+            return "Invalid secret", 403
+        
+        amtDeleted = 0
+        
+        for id in data["ids"]:
+            cursor.execute("DELETE FROM public.rsitems WHERE id = %(id)s", {"id": id})
+            amtDeleted += 1
+        
+        conn.commit()
+        
+        cursor.close()
+        return amtDeleted, 200
+    else:
+        return "Invalid method", 403
+
 @app.route('/cs-get-inv', methods=['POST'])
 def csGetInv():
     if request.method == 'POST':
