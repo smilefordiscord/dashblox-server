@@ -293,9 +293,11 @@ def csGetPlayerData():
 
         playerData = cursor.fetchone()
         
-        returnDataRaw = [playerData, returnedLvls]
+        print(playerData)
+
+        returnDataRaw = [playerData, returnedLvls]()
         returnData = JSONEncoder.encode(returnDataRaw)
-        
+
         cursor.close()
         return returnData, 200
     else:
