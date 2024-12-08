@@ -288,14 +288,16 @@ def csGetPlayerData():
         conn.commit()
         
         returnedLvls = cursor.fetchall()
-
-        cursor.execute("SELECT * FROM public.rsplayerdata WHERE userId = %(owner)s", {"owner":owner})
-
-        playerData = cursor.fetchone()
+        if returnedLvls == None:
+            returnedLvls = []
         
-        print(playerData)
-
-        returnDataRaw = [playerData, returnedLvls]()
+        cursor.execute("SELECT * FROM public.rsplayerdata WHERE userId = %(owner)s", {"owner":owner})
+        
+        playerData = cursor.fetchone()
+        if playerData == None:
+            playerData = []
+        
+        returnDataRaw = [playerData, returnedLvls]
         returnData = JSONEncoder.encode(returnDataRaw)
 
         cursor.close()
