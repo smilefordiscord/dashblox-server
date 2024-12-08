@@ -5,6 +5,7 @@ import json
 from json.encoder import JSONEncoder
 import os
 from flask import Flask, request
+import time
 
 app = Flask(__name__)
 
@@ -289,12 +290,15 @@ def csGetPlayerData():
         
         returnedLvls = cursor.fetchall()
         if returnedLvls == None:
+            cursor.execute()
             returnedLvls = []
         
         cursor.execute("SELECT * FROM public.rsplayerdata WHERE userId = %(owner)s", {"owner":owner})
 
         playerData = cursor.fetchone()
         if playerData == None:
+            cursor.execute("INSERT INTO public.rsplayerdata (userid, money, laston, opened) VALUES (%(userid)s, 0, %(laston)s, 0);", {"userid":owner, "laston":time.time()})
+            conn.commit()
             playerData = []
         
         returnData = [playerData, returnedLvls]
