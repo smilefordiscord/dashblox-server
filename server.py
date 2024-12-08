@@ -297,9 +297,10 @@ def csGetPlayerData():
 
         playerData = cursor.fetchone()
         if playerData == None:
-            cursor.execute("INSERT INTO public.rsplayerdata (userid, money, laston, opened) VALUES (%(userid)s, 0, %(laston)s, 0);", {"userid":owner, "laston":time.time()})
+            lastTime = time.time()
+            cursor.execute("INSERT INTO public.rsplayerdata (userid, money, laston, opened) VALUES (%(userid)s, 0, %(laston)s, 0);", {"userid":owner, "laston":lastTime})
             conn.commit()
-            playerData = []
+            playerData = {"userid":owner, "money": 0, "laston": lastTime, "opened": 0}
         
         returnData = [playerData, returnedLvls]
         
