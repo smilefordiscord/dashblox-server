@@ -270,9 +270,9 @@ def csDeleteItems():
             else:
                 idList = idList + ", " + str(id)
 
-        idList = "(" + idList + ")"
+        idList = "DELETE FROM public.rsitems WHERE id IN (" + idList + ")"
         
-        cursor.execute("DELETE FROM public.rsitems WHERE id IN %(list)s", {"list": idList})
+        cursor.execute(idList)
         conn.commit()
 
         cursor.close()
