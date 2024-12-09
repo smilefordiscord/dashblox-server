@@ -263,13 +263,34 @@ def csDeleteItems():
             cursor.close()
             return "Invalid secret", 403
         
+        idList = ""
         for id in data["ids"]:
-            cursor.execute("DELETE FROM public.rsitems WHERE id = %(id)s", {"id": id})
+            if idList == "":
+                idList = str(id)
+            else:
+                idList = idList + ", " + str(id)
+
+        idList = "(" + idList + ")"
         
+        cursor.execute("DELETE FROM public.rsitems WHERE id IN %(list)s", {"list": idList})
         conn.commit()
 
         cursor.close()
         return "OK", 200
+        # cursor = conn.cursor()
+
+        # data = request.get_json()
+        # if data["secret"] != secret:
+        #     cursor.close()
+        #     return "Invalid secret", 403
+        
+        # for id in data["ids"]:
+        #     cursor.execute("DELETE FROM public.rsitems WHERE id = %(id)s", {"id": id})
+        
+        # conn.commit()
+
+        # cursor.close()
+        # return "OK", 200
     else:
         return "Invalid method", 403
 
