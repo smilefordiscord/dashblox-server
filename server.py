@@ -248,6 +248,9 @@ def csAddItems():
             conn.commit()
             returnedLvls.append(cursor.fetchone()[0])
         
+        cursor.execute("UPDATE public.rsplayerdata SET money = money + %(money)s WHERE userid = %(userid)s", {"money": data["cost"], "userid": data["userid"]})
+        conn.commit()
+        
         cursor.close()
         return returnedLvls, 200
     else:
@@ -269,10 +272,10 @@ def csDeleteItems():
                 idList = str(id)
             else:
                 idList = idList + ", " + str(id)
-
-        idList = "DELETE FROM public.rsitems WHERE id IN (" + idList + ")"
         
+        idList = "DELETE FROM public.rsitems WHERE id IN (" + idList + ")"
         cursor.execute(idList)
+        cursor.execute("UPDATE public.rsplayerdata SET money = money + %(money)s WHERE userid = %(userid)s", {"money": data["money"], "userid": data["userid"]})
         conn.commit()
 
         cursor.close()
@@ -325,10 +328,6 @@ def csLeaderboard():
             cursor.close()
             return "Invalid secret", 403
         
-        # owner = data["owner"]
-        # cursor.execute("SELECT * FROM public.rsitems WHERE owner = %(owner)s", {"owner":owner})
-        # conn.commit()
-
         cursor.execute("SELECT * FROM public.rsplayerdata ORDER BY money DESC LIMIT 100")
         top100 = cursor.fetchall()
         cursor.execute("SELECT * FROM public.rsplayerdata ORDER BY money ASC LIMIT 100")
