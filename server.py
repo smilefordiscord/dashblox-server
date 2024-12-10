@@ -238,7 +238,10 @@ def csAddItems():
         
         returnedLvls = []
         
+        amtOpened = 0
+
         for item in data["items"]:
+            amtOpened += 1
             itemid = item["id"]
             owner = item["owner"]
             pattern = item["pattern"]
@@ -249,6 +252,7 @@ def csAddItems():
             returnedLvls.append(cursor.fetchone()[0])
         
         cursor.execute("UPDATE public.rsplayerdata SET money = money + %(money)s WHERE userid = %(userid)s", {"money": data["cost"], "userid": data["userid"]})
+        cursor.execute("UPDATE public.rsplayerdata SET opened = opened + %(opened)s WHERE userid = %(userid)s", {"opened": amtOpened, "userid": data["userid"]})
         conn.commit()
         
         cursor.close()
