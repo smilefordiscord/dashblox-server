@@ -315,6 +315,34 @@ def csGetInv():
     else:
         return "Invalid method", 403
 
+@app.route('/cs-leaderboard', methods=['POST'])
+def csLeaderboard():
+    if request.method == 'POST':
+        cursor = conn.cursor()
+
+        data = request.get_json()
+        if data["secret"] != secret:
+            cursor.close()
+            return "Invalid secret", 403
+        
+        # owner = data["owner"]
+        # cursor.execute("SELECT * FROM public.rsitems WHERE owner = %(owner)s", {"owner":owner})
+        # conn.commit()
+
+        cursor.execute("SELECT * FROM public.rsplayerdata ORDER BY money DESC LIMIT 100")
+        top100 = cursor.fetchall()
+        cursor.execute("SELECT * FROM public.rsplayerdata ORDER BY money ASC LIMIT 100")
+        bot100 = cursor.fetchall()
+
+        arr = [top100, bot100]
+
+        returnedLvls = JSONEncoder().encode(arr)
+        
+        cursor.close()
+        return returnedLvls, 200
+    else:
+        return "Invalid method", 403
+
 @app.route('/cs-get-player-data', methods=['POST'])
 def csGetPlayerData():
     if request.method == 'POST':
