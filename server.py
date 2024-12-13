@@ -309,9 +309,8 @@ def csTradeUp():
         conn.commit()
         
         returnedLvls = []
-        
+
         for item in data["add"]:
-            amtOpened += 1
             itemid = item["id"]
             owner = item["owner"]
             pattern = item["pattern"]
