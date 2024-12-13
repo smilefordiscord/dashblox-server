@@ -284,20 +284,45 @@ def csDeleteItems():
 
         cursor.close()
         return "OK", 200
-        # cursor = conn.cursor()
+    else:
+        return "Invalid method", 403
 
-        # data = request.get_json()
-        # if data["secret"] != secret:
-        #     cursor.close()
-        #     return "Invalid secret", 403
-        
-        # for id in data["ids"]:
-        #     cursor.execute("DELETE FROM public.rsitems WHERE id = %(id)s", {"id": id})
-        
-        # conn.commit()
+@app.route('/cs-trade-up', methods=['POST'])
+def csTradeUp():
+    if request.method == 'POST':
+        cursor = conn.cursor()
 
-        # cursor.close()
-        # return "OK", 200
+        data = request.get_json()
+        if data["secret"] != secret:
+            cursor.close()
+            return "Invalid secret", 403
+        
+        idList = ""
+        for id in data["take"]:
+            if idList == "":
+                idList = str(id)
+            else:
+                idList = idList + ", " + str(id)
+        
+        idList = "DELETE FROM public.rsitems WHERE id IN (" + idList + ")"
+        cursor.execute(idList)
+        conn.commit()
+        
+        returnedLvls = []
+        
+        for item in data["add"]:
+            amtOpened += 1
+            itemid = item["id"]
+            owner = item["owner"]
+            pattern = item["pattern"]
+            stattrak = item["st"]
+            wear = item["wear"]
+            cursor.execute("INSERT INTO public.rsitems (itemid, owner, pattern, stattrak, wear) VALUES (%(itemid)s, %(owner)s, %(pattern)s, %(stattrak)s, %(wear)s) RETURNING id;", {"itemid":itemid,"owner":owner,"pattern":pattern,"stattrak":stattrak,"wear":wear})
+            conn.commit()
+            returnedLvls.append(cursor.fetchone()[0])
+        
+        cursor.close()
+        return returnedLvls, 200
     else:
         return "Invalid method", 403
 
