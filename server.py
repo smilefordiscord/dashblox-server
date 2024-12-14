@@ -360,8 +360,10 @@ def csLeaderboard():
         top100 = cursor.fetchall()
         cursor.execute("SELECT * FROM public.rsplayerdata ORDER BY money ASC LIMIT 100")
         bot100 = cursor.fetchall()
-
-        arr = [top100, bot100]
+        cursor.execute("SELECT * FROM public.rsplayerdata ORDER BY opened DESC LIMIT 100")
+        topUnboxers = cursor.fetchall()
+        
+        arr = [top100, bot100, topUnboxers]
 
         returnedLvls = JSONEncoder().encode(arr)
         
