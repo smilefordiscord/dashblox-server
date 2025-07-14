@@ -1,4 +1,3 @@
-import IP2Location.iptools
 import geoip2.database
 import psycopg2
 import time
