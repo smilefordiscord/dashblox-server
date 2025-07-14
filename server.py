@@ -1,4 +1,3 @@
-import geoip2.database
 import psycopg2
 import time
 from flask import Flask, request
@@ -8,6 +7,7 @@ import os
 from flask import Flask, request
 import time
 import geoip2
+import geoip2.database
 
 app = Flask(__name__)
 
