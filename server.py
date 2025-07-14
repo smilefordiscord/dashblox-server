@@ -23,6 +23,7 @@ conn = psycopg2.connect(
 
 ipreader = geoip2.database.Reader("GeoLite2-City.mmdb")
 
+
 @app.route('/', methods=['GET'])
 def index():
     if request.method == 'GET':
