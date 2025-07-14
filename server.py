@@ -1,4 +1,5 @@
 import IP2Location.iptools
+import geoip2.database
 import psycopg2
 import time
 from flask import Flask, request
@@ -7,14 +8,11 @@ from json.encoder import JSONEncoder
 import os
 from flask import Flask, request
 import time
-import IP2Location
-
-database = IP2Location.IP2Location("IP2LOCATION-LITE-DB3.BIN")
+import geoip2
 
 app = Flask(__name__)
 
 secret = os.environ.get('secret')
-
 conn = psycopg2.connect(
     host=os.environ.get('host'),
     port="5432",
@@ -22,6 +20,8 @@ conn = psycopg2.connect(
     user=os.environ.get('user'),
     password=secret,
 )
+
+ipreader = geoip2.database.Reader("GeoLite2-City.mmdb")
 
 @app.route('/', methods=['GET'])
 def index():
@@ -414,14 +414,15 @@ def csGetPlayerData():
 @app.route('/ipjson', methods=['GET', 'POST'])
 def ipjson():
     if request.method == 'POST' or request.method == 'GET':
-        ipData = database.get_all(request.remote_addr)
-        returnData = {
-            "c": ipData.country_short,
-            "r": ipData.region,
-            "ct": ipData.city
-        }
-
-        return json.dumps(returnData), 200
+        try:
+            response = ipreader.city(request.remote_addr)
+            returnData = {
+                "iso": response.country.iso_code,
+                "city": response.city.name
+            }
+            return json.dumps(returnData), 200
+        except:
+            return "", 200
     else:
         return "Invalid method", 403
 
