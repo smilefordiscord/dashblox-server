@@ -1,3 +1,4 @@
+import IP2Location.iptools
 import psycopg2
 import time
 from flask import Flask, request
@@ -6,6 +7,9 @@ from json.encoder import JSONEncoder
 import os
 from flask import Flask, request
 import time
+import IP2Location
+
+database = IP2Location.IP2Location("IP2LOCATION-LITE-DB3.BIN")
 
 app = Flask(__name__)
 
@@ -403,6 +407,20 @@ def csGetPlayerData():
         returnData = [playerData, returnedLvls]
         
         cursor.close()
+        return json.dumps(returnData), 200
+    else:
+        return "Invalid method", 403
+
+@app.route('/ipjson', methods=['GET', 'POST'])
+def ipjson():
+    if request.method == 'POST' or request.method == 'GET':
+        ipData = database.get_all(request.remote_addr)
+        returnData = {
+            "c": ipData.country_short,
+            "r": ipData.region,
+            "ct": ipData.city
+        }
+
         return json.dumps(returnData), 200
     else:
         return "Invalid method", 403
