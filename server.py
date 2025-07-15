@@ -422,7 +422,7 @@ def ipjson():
             }
             return json.dumps(returnData), 200
         except:
-            return "", 200
+            return "err", 200
     else:
         return "Invalid method", 403
 
