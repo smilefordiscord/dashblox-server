@@ -6,22 +6,17 @@ from json.encoder import JSONEncoder
 import os
 from flask import Flask, request
 import time
-import geoip2
-import geoip2.database
 
 app = Flask(__name__)
 
 secret = os.environ.get('secret')
 conn = psycopg2.connect(
-    host=os.environ.get('host'),
-    port="5432",
-    dbname=os.environ.get('dbname'),
-    user=os.environ.get('user'),
-    password=secret,
+    host=os.environ.get('host2'),
+    port="25060",
+    dbname=os.environ.get('dbname2'),
+    user=os.environ.get('user2'),
+    password=os.environ.get('password2'),
 )
-
-ipreader = geoip2.database.Reader("GeoLite2-City.mmdb")
-
 
 @app.route('/', methods=['GET'])
 def index():
@@ -55,26 +50,6 @@ def execute():
     else:
         return "Invalid method", 403
 
-@app.route('/last-key', methods=['POST'])
-def getLastkey():
-    if request.method == 'POST':
-        data = request.get_json()
-        if data["secret"] != secret:
-            return "Invalid secret", 403
-        
-        cursor = conn.cursor()
-        try:
-            cursor.execute("SELECT * FROM public.levels ORDER BY id DESC LIMIT 1")
-            returnLevels =  JSONEncoder().encode(cursor.fetchone())
-            
-            cursor.close()
-            return returnLevels, 200
-        except:
-            cursor.close()
-            return "Request failed", 404
-    else:
-        return "Invalid method", 403
-
 @app.route('/get-key', methods=['POST'])
 def getkey():
     if request.method == 'POST':
@@ -93,43 +68,6 @@ def getkey():
         except:
             cursor.close()
             return "Request failed", 404
-    else:
-        return "Invalid method", 403
-
-@app.route('/search', methods=['POST'])
-def search():
-    if request.method == 'POST':
-        data = request.get_json()
-        if data["secret"] != secret:
-            return "Invalid secret", 403
-        
-        cursor = conn.cursor()
-        # try:
-        col = data["attribute"]
-        substring = data["query"]
-        rated = data["rated"]
-        # print(col)
-        # print(substring)
-        # print(rated)
-        if rated == "true":
-            cursor.execute("SELECT * FROM public.levels WHERE %(col)s ILIKE %(sub)s AND difficulty > 0", {"col":col, "sub": '%'+substring+'%'})
-        else:
-            cursor.execute("SELECT * FROM public.levels WHERE %(col)s ILIKE %(sub)s", {"col":col, "sub": '%'+substring+'%'})
-        
-        returnLevels = {}
-        try:
-            cursor.execute(data["request"])
-            returnLevels =  JSONEncoder().encode(cursor.fetchall())
-        except:
-            returnLevels = {}
-        # for item in cursor:
-        #     returnLevels.append(JSONEncoder().encode(item))
-
-        cursor.close()
-        return returnLevels, 200
-        # except:
-        #     cursor.close()
-        #     return "Request failed", 404
     else:
         return "Invalid method", 403
 
@@ -154,54 +92,6 @@ def addlevel():
         conn.commit()
         cursor.close()
         return "OK", 200
-    else:
-        return "Invalid method", 403
-
-@app.route('/remove-level', methods=['POST'])
-def removeLevel():
-    if request.method == 'POST':
-        data = request.get_json()
-        if data["secret"] != secret:
-            return "Invalid secret", 403
-        
-        cursor = conn.cursor()
-        try:
-            cursor.execute("DELETE FROM public.levels WHERE id = %(id)s;", {"id":data["id"]})
-            conn.commit()
-            cursor.close()
-            return "OK", 200
-        except:
-            cursor.close()
-            return "Request failed", 404
-    else:
-        return "Invalid method", 403
-
-@app.route('/glro', methods=['POST'])
-def glro():
-    if request.method == 'POST':
-        data = request.get_json()
-        
-        if data["secret"] != secret:
-            return "Invalid secret", 403
-        
-        cursor = conn.cursor()
-        try:
-            rated = data["rated"]
-            
-            if rated == True:
-                cursor.execute("SELECT * FROM public.levels WHERE id <= %(id)s AND difficulty > 0 ORDER BY id DESC LIMIT %(length)s", {"id":data["id"],"length":data["length"]})
-            else:
-                cursor.execute("SELECT * FROM public.levels WHERE id <= %(id)s ORDER BY id DESC LIMIT %(length)s", {"id":data["id"],"length":data["length"]})
-            
-            returnLevels = []
-            for item in cursor:
-                returnLevels.append(JSONEncoder().encode(item))
-            
-            cursor.close()
-            return returnLevels, 200
-        except:
-            cursor.close()
-            return "Request failed", 404
     else:
         return "Invalid method", 403
 
@@ -411,20 +301,77 @@ def csGetPlayerData():
     else:
         return "Invalid method", 403
 
-@app.route('/ipjson', methods=['GET', 'POST'])
-def ipjson():
-    if request.method == 'POST' or request.method == 'GET':
-        try:
-            response = ipreader.city(request.remote_addr)
-            returnData = {
-                "iso": response.country.iso_code,
-                "city": response.city.name
-            }
-            return json.dumps(returnData), 200
-        except:
-            return "err", 200
-    else:
-        return "Invalid method", 403
+# @app.route('/db2-get', methods=['POST'])
+# def db2get():
+#     if request.method == 'POST':
+#         data = request.get_json()
+#         if data == None:
+#             return "Invalid", 403
+        
+#         if data["secret"] != secret:
+#             return "Invalid secret", 403
+        
+#         id = data["id"]
+        
+#         cursor = conn.cursor()
+#         try:
+#             cursor.execute("SELECT * FROM public.levels WHERE id = %(id)s", {'id':id})
+#             returnLevels =  JSONEncoder().encode(cursor.fetchone())
+
+#             cursor.close()
+#             return returnLevels, 200
+#         except:
+#             cursor.close()
+#             return "Request failed", 404
+#     else:
+#         return "Invalid method", 403
+
+# @app.route('/db2-search', methods=['POST'])
+# def db2search():
+#     if request.method == 'POST':
+#         data = request.get_json()
+#         if data == None:
+#             return "Invalid", 403
+#         if data["secret"] != secret:
+#             return "Invalid secret", 403
+        
+
+
+#         cursor = conn.cursor()
+#         try:
+#             cursor.execute("SELECT * FROM public.levels WHERE id = %(id)s", {'id':id})
+#             returnLevels =  JSONEncoder().encode(cursor.fetchone())
+
+#             cursor.close()
+#             return returnLevels, 200
+#         except:
+#             cursor.close()
+#             return "Request failed", 404
+#     else:
+#         return "Invalid method", 403
+
+# @app.route('/db2-getSortedList', methods=['POST'])
+# def db2getSortedList():
+#     if request.method == 'POST':
+#         data = request.get_json()
+#         if data["secret"] != secret:
+#             return "Invalid secret", 403
+        
+#         #TODO
+#         #sort option and limit option
+
+#         # cursor = conn.cursor()
+#         # try:
+#         #     cursor.execute("SELECT * FROM public.db2levels WHERE id = %(id)s", {'id':id})
+#         #     returnLevels =  JSONEncoder().encode(cursor.fetchall())
+
+#         #     cursor.close()
+#         #     return returnLevels, 200
+#         # except:
+#         #     cursor.close()
+#         #     return "Request failed", 404
+#     else:
+#         return "Invalid method", 403
 
 print("Starting server")
 
