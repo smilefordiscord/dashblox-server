@@ -41,6 +41,8 @@ def execute():
         return "Invalid method", 403
     
     data = request.get_json()
+    if data is None:
+        return "Invalid", 403
     if data["secret"] != secret:
         return "Invalid secret", 403
     
@@ -70,14 +72,16 @@ def addlevel():
         logWarn("/add-level 403")
         return "Invalid method", 403
     
+    data = request.get_json()
+    if data is None:
+        return "Invalid", 403
+    if data["secret"] != secret:
+        cursor.close()
+        return "Invalid secret", 403
+        
     cursor = conn.cursor()
 
     try:
-        data = request.get_json()
-        if data["secret"] != secret:
-            cursor.close()
-            return "Invalid secret", 403
-        
         title = data["title"]
         desc = data["desc"]
         lvldata = data["data"]
