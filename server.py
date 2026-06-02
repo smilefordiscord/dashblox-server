@@ -115,7 +115,7 @@ def db2get():
         cursor.execute("SELECT * FROM public.levels ORDER BY id DESC LIMIT 1")
         returnLevels =  JSONEncoder().encode(cursor.fetchone())
         cursor.close()
-        logWarn("/db2-maxlvl 200")
+        logInfo("/db2-maxlvl 200")
         return returnLevels, 200
     except:
         cursor.close()
@@ -160,11 +160,11 @@ def db2search():
 
         returnLevels = JSONEncoder().encode(cursor.fetchall())
         cursor.close()
-        print("/db2-search 200 - " + searchText)
+        logInfo("/db2-search 200 - " + searchText)
         return returnLevels, 200
     except:
         cursor.close()
-        print("/db2-search 500")
+        logWarn("/db2-search 500")
         return "Request failed", 500
 
 print("Starting server")
