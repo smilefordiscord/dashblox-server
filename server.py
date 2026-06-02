@@ -5,9 +5,14 @@ import json
 from json.encoder import JSONEncoder
 import os
 from flask import Flask, request
+import logging
+import warnings
 import time
+from datetime import datetime
 
 app = Flask(__name__)
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.ERROR)
 
 secret = os.environ.get('secret')
 conn = psycopg2.connect(
@@ -17,6 +22,12 @@ conn = psycopg2.connect(
     user=os.environ.get('user2'),
     password=os.environ.get('password2'),
 )
+
+def logInfo(address, method, route, status, extra):
+    print(address + ' - "' + method + ' ' + route + '" ' + str(status) + ' - ' + extra)
+
+def logWarn(address, method, route, status, extra):
+    print("\033[93m {}\033[00m".format(address + ' - "' + method + ' ' + route + '" ' + str(status) + ' - ' + extra))
 
 @app.route('/', methods=['GET'])
 def index():
@@ -32,43 +43,27 @@ def execute():
         if data["secret"] != secret:
             return "Invalid secret", 403
         
+        sql = data["request"]
+
         cursor = conn.cursor()
         try:
             returnLevels = {}
             try:
-                cursor.execute(data["request"])
+                cursor.execute(sql)
                 returnLevels =  JSONEncoder().encode(cursor.fetchall())
             except:
                 returnLevels = ""
             conn.commit()
             cursor.close()
+            logInfo(request.remote_addr, "POST", "/execute", 200, sql)
             return returnLevels, 200
         except:
             conn.commit()
             cursor.close()
+            logWarn(request.remote_addr, "POST", "/execute", 404, sql)
             return "Request failed", 404
     else:
-        return "Invalid method", 403
-
-@app.route('/get-key', methods=['POST'])
-def getkey():
-    if request.method == 'POST':
-        data = request.get_json()
-        if data["secret"] != secret:
-            return "Invalid secret", 403
-        
-        cursor = conn.cursor()
-        try:
-            id: int = 17
-            cursor.execute("SELECT * FROM public.levels WHERE id = %(id)s", {'id':id})
-            returnLevels =  JSONEncoder().encode(cursor.fetchone())
-
-            cursor.close()
-            return returnLevels, 200
-        except:
-            cursor.close()
-            return "Request failed", 404
-    else:
+        logWarn(request.remote_addr, "GET", "/execute", 403)
         return "Invalid method", 403
 
 @app.route('/add-level', methods=['POST'])
@@ -91,8 +86,10 @@ def addlevel():
         
         conn.commit()
         cursor.close()
+        logInfo(request.remote_addr, "POST", "/add-level", 200)
         return "OK", 200
     else:
+        logWarn(request.remote_addr, "GET", "/add-level", 403)
         return "Invalid method", 403
 
 @app.route('/cs-add-item', methods=['POST'])
@@ -116,8 +113,10 @@ def csAddItem():
         returnedLvls = JSONEncoder().encode(cursor.fetchone())
         
         cursor.close()
+        logInfo(request.remote_addr, "POST", "/cs-add-item", 200)
         return returnedLvls, 200
     else:
+        logWarn(request.remote_addr, "GET", "/cs-add-item", 403)
         return "Invalid method", 403
 
 @app.route('/cs-add-items', methods=['POST'])
@@ -150,8 +149,10 @@ def csAddItems():
         conn.commit()
         
         cursor.close()
+        logInfo(request.remote_addr, "POST", "/cs-add-items", 200)
         return returnedLvls, 200
     else:
+        logWarn(request.remote_addr, "GET", "/cs-add-items", 403)
         return "Invalid method", 403
 
 @app.route('/cs-delete-items', methods=['POST'])
@@ -177,8 +178,10 @@ def csDeleteItems():
         conn.commit()
 
         cursor.close()
+        logInfo(request.remote_addr, "POST", "/cs-delete-items", 200)
         return "OK", 200
     else:
+        logWarn(request.remote_addr, "GET", "/cs-delete-items", 403)
         return "Invalid method", 403
 
 @app.route('/cs-trade-up', methods=['POST'])
@@ -215,8 +218,10 @@ def csTradeUp():
             returnedLvls.append(cursor.fetchone()[0])
         
         cursor.close()
+        logInfo(request.remote_addr, "POST", "/cs-trade-up", 200)
         return returnedLvls, 200
     else:
+        logWarn(request.remote_addr, "GET", "/cs-trade-up", 403)
         return "Invalid method", 403
 
 @app.route('/cs-get-inv', methods=['POST'])
@@ -236,8 +241,10 @@ def csGetInv():
         returnedLvls = JSONEncoder().encode(cursor.fetchall())
         
         cursor.close()
+        logInfo(request.remote_addr, "POST", "/cs-get-inv", 200)
         return returnedLvls, 200
     else:
+        logWarn(request.remote_addr, "GET", "/cs-get-inv", 403)
         return "Invalid method", 403
 
 @app.route('/cs-leaderboard', methods=['POST'])
@@ -262,8 +269,10 @@ def csLeaderboard():
         returnedLvls = JSONEncoder().encode(arr)
         
         cursor.close()
+        logInfo(request.remote_addr, "POST", "/cs-leaderboard", 200)
         return returnedLvls, 200
     else:
+        logWarn(request.remote_addr, "GET", "/cs-leaderboard", 403)
         return "Invalid method", 403
 
 @app.route('/cs-get-player-data', methods=['POST'])
@@ -297,8 +306,10 @@ def csGetPlayerData():
         returnData = [playerData, returnedLvls]
         
         cursor.close()
+        logInfo(request.remote_addr, "POST", "/cs-get-player-data", 200)
         return json.dumps(returnData), 200
     else:
+        logWarn(request.remote_addr, "GET", "/cs-get-player-data", 403)
         return "Invalid method", 403
 
 # @app.route('/db2-get', methods=['POST'])
