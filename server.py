@@ -24,10 +24,10 @@ conn = psycopg2.connect(
 )
 
 def logInfo(address, method, route, status, extra):
-    print(address + ' - "' + method + ' ' + route + '" ' + str(status) + ' - ' + extra)
+    print(method + ' ' + route + '" ' + str(status) + ' - ' + extra)
 
 def logWarn(address, method, route, status, extra):
-    print("\033[93m {}\033[00m".format(address + ' - "' + method + ' ' + route + '" ' + str(status) + ' - ' + extra))
+    print("\033[93m {}\033[00m".format(method + ' ' + route + '" ' + str(status) + ' - ' + extra))
 
 @app.route('/', methods=['GET'])
 def index():
