@@ -167,45 +167,45 @@ def db2search():
         logWarn("/db2-search 500")
         return "Request failed", 500
 
-# @app.route('/db2-recent', methods=['POST'])
-# def db2recent():
-#     if request.method != 'POST':
-#         return "Invalid method", 403
+@app.route('/db2-recent', methods=['POST'])
+def db2recent():
+    if request.method != 'POST':
+        return "Invalid method", 403
     
-#     data = request.get_json()
-#     if data is None:
-#         return "Invalid", 403
-#     if data.get("secret") != secret:
-#         return "Invalid secret", 403
+    data = request.get_json()
+    if data is None:
+        return "Invalid", 403
+    if data.get("secret") != secret:
+        return "Invalid secret", 403
     
-#     max = data["max"]
+    max = data["max"]
 
-#     cursor = conn.cursor()
-#     try:
-#         if max > 0:
-#             query = sql.SQL("""
-#                 SELECT * FROM public.levels 
-#                 WHERE id < %s 
-#                 ORDER BY id DESC 
-#                 LIMIT 10
-#             """)
-#             cursor.execute(query, (max, ))
-#         else:
-#             query = sql.SQL("""
-#                 SELECT * FROM public.levels 
-#                 ORDER BY id DESC 
-#                 LIMIT 10
-#             """)
-#             cursor.execute(query)
+    cursor = conn.cursor()
+    try:
+        if max > 0:
+            query = sql.SQL("""
+                SELECT * FROM public.levels 
+                WHERE id < %s 
+                ORDER BY id DESC 
+                LIMIT 10
+            """)
+            cursor.execute(query, (max, ))
+        else:
+            query = sql.SQL("""
+                SELECT * FROM public.levels 
+                ORDER BY id DESC 
+                LIMIT 10
+            """)
+            cursor.execute(query)
 
-#         returnLevels = JSONEncoder().encode(cursor.fetchall())
-#         cursor.close()
-#         logInfo("/db2-search 200 - " + searchText)
-#         return returnLevels, 200
-#     except:
-#         cursor.close()
-#         logWarn("/db2-search 500")
-#         return "Request failed", 500
+        returnLevels = JSONEncoder().encode(cursor.fetchall())
+        cursor.close()
+        logInfo("/db2-recent 200")
+        return returnLevels, 200
+    except:
+        cursor.close()
+        logWarn("/db2-recent 500")
+        return "Request failed", 500
 
 print("Starting server")
 
