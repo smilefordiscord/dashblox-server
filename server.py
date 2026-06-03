@@ -135,31 +135,27 @@ def db2search():
     if data.get("secret") != secret:
         return "Invalid secret", 403
     
-    searchText = f"%{data['searchText']}%"
-    sortType = data["sortType"]
     max = data["max"]
-
+    searchText = f"%{data['searchText']}%"
+    searchType = data["searchType"]
+    sortType = data["sortType"]
+    
     cursor = conn.cursor()
     try:
-        if max > 0:
-            query = sql.SQL("""
-                SELECT * FROM public.levels 
-                WHERE {0} < %s AND title ILIKE %s 
-                ORDER BY {0} DESC 
-                LIMIT 10
-            """).format(sql.Identifier(sortType))
-            
+        query = "SELECT * FROM public.levels"
+        if searchType == 1:
+            query = query + " WHERE {0} < %s AND title ILIKE %s ORDER BY {0} DESC LIMIT 10"
+            query = sql.SQL(query).format(sql.Identifier(sortType))
+            cursor.execute(query, (max, searchText))
+        elif searchType == 2:
+            query = query + " WHERE {0} < %s AND owner = %s ORDER BY {0} DESC LIMIT 10"
+            query = sql.SQL(query).format(sql.Identifier(sortType))
             cursor.execute(query, (max, searchText))
         else:
-            query = sql.SQL("""
-                SELECT * FROM public.levels 
-                WHERE title ILIKE %s 
-                ORDER BY {} DESC 
-                LIMIT 10
-            """).format(sql.Identifier(sortType))
-            
+            query = query + " WHERE id = %s LIMIT 1"
+            query = sql.SQL(query).format(sql.Identifier(sortType))
             cursor.execute(query, (searchText,))
-
+        
         returnLevels = JSONEncoder().encode(cursor.fetchall())
         cursor.close()
         logInfo("/db2-search 200 - " + searchText)
