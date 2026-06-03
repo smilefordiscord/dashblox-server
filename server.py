@@ -19,6 +19,7 @@ conn = psycopg2.connect(
     dbname=os.environ.get('dbname2'),
     user=os.environ.get('user2'),
     password=os.environ.get('password2'),
+    sslmode="require"
 )
 
 def logInfo(text):
@@ -34,6 +35,7 @@ def index():
     else:
         return "Invalid method", 403
 
+#TODO: this needs to die
 @app.route('/execute', methods=['POST'])
 def execute():
     if request.method != 'POST':
