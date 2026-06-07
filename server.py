@@ -139,16 +139,17 @@ def db2search():
     searchText = f"%{data['searchText']}%"
     searchType = data["searchType"]
     sortType = data["sortType"]
-    
+    order = data["order"]
+
     cursor = conn.cursor()
     try:
         query = "SELECT * FROM public.levels"
         if searchType == 1:
-            query = query + " WHERE {0} < %s AND title ILIKE %s ORDER BY {0} DESC LIMIT 10"
+            query = query + " WHERE {0} < %s AND title ILIKE %s ORDER BY {0} " + order + " LIMIT 10"
             query = sql.SQL(query).format(sql.Identifier(sortType))
             cursor.execute(query, (max, searchText))
         elif searchType == 2:
-            query = query + " WHERE {0} < %s AND owner = %s ORDER BY {0} DESC LIMIT 10"
+            query = query + " WHERE {0} < %s AND owner = %s ORDER BY {0} " + order + " LIMIT 10"
             query = sql.SQL(query).format(sql.Identifier(sortType))
             cursor.execute(query, (max, searchText))
         else:
